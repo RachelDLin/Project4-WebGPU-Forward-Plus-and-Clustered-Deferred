@@ -38,9 +38,12 @@ class CameraUniforms {
         this.floatView[65] = dims[1];
     }
 
-    set clipPlaneDists(clipDists: Vec2) {
-        this.floatView[66] = clipDists[0];
-        this.floatView[67] = clipDists[1];
+    set nearClip(near: number) {
+        this.floatView[66] = near;
+    }
+
+    set farClip(far: number) {
+        this.floatView[67] = far;
     }
 }
 
@@ -162,7 +165,8 @@ export class Camera {
         this.processInput(deltaTime);
 
         const screenRes = vec2.fromValues(canvas.width, canvas.height);
-        const clipDists = vec2.fromValues(Camera.nearPlane, Camera.farPlane);
+        const nearClip = Camera.nearPlane;
+        const farClip = Camera.farPlane;
 
         const lookPos = vec3.add(this.cameraPos, vec3.scale(this.cameraFront, 1));
 
@@ -177,7 +181,9 @@ export class Camera {
 
         // 2: write to extra buffers needed for light clustering here
         this.uniforms.screenRes = screenRes;
-        this.uniforms.clipPlaneDists = clipDists;
+        this.uniforms.nearClip = nearClip;
+        this.uniforms.farClip = farClip;
+
         this.uniforms.viewMat = viewMat;
         this.uniforms.inverseViewMat = inverseViewMat;
         this.uniforms.inverseProjMat = inverseProjMat;

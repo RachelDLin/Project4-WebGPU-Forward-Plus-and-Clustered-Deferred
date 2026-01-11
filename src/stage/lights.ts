@@ -100,11 +100,13 @@ export class Lights {
         });
 
         // 2: initialize layouts, pipelines, textures, etc. needed for light clustering here
-        const clusterSize = shaders.constants.clusterDims[0] * shaders.constants.clusterDims[1] * shaders.constants.clusterDims[2];
+        const clusterSize = shaders.constants.clusterDims[0] * 
+                            shaders.constants.clusterDims[1] * 
+                            shaders.constants.clusterDims[2];
         
         this.clusterSetStorageBuffer = device.createBuffer({
             label: "clusters",
-            size: clusterSize * (shaders.constants.maxLightsPerCluster * 4 + 16), // 4 bytes per float
+            size: clusterSize * 4 * (1 + shaders.constants.maxLightsPerCluster), // 4 bytes per float
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
         });
 
@@ -119,7 +121,7 @@ export class Lights {
                 { // lightSet
                     binding: 1,
                     visibility: GPUShaderStage.COMPUTE,
-                    buffer: { type: "storage" }
+                    buffer: { type: "read-only-storage" }
                 },
                 { // clusterSet
                     binding: 2,
@@ -187,9 +189,9 @@ export class Lights {
 
         computePass.setBindGroup(0, this.clusterLightsComputeBindGroup);
 
-        computePass.dispatchWorkgroups(Math.ceil(shaders.constants.clusterDims[0] / shaders.constants.clustering_workgroupSize[0]), 
-                                        Math.ceil(shaders.constants.clusterDims[1] / shaders.constants.clustering_workgroupSize[1]), 
-                                        Math.ceil(shaders.constants.clusterDims[2] / shaders.constants.clustering_workgroupSize[2]));
+        computePass.dispatchWorkgroups(Math.ceil(shaders.constants.clusterDims[0] / shaders.constants.clusterLightsWorkgroupSize[0]), 
+                                        Math.ceil(shaders.constants.clusterDims[1] / shaders.constants.clusterLightsWorkgroupSize[1]), 
+                                        Math.ceil(shaders.constants.clusterDims[2] / shaders.constants.clusterLightsWorkgroupSize[2]));
 
         computePass.end();
     }

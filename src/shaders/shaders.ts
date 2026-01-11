@@ -33,9 +33,9 @@ export const constants = {
     lightRadius: 2,
 
     clusterDims: [16, 16, 16],
-    maxLightsPerCluster: 256,
+    maxLightsPerCluster: 64,
 
-    clustering_workgroupSize: [4, 4, 4]
+    clusterLightsWorkgroupSize: [4, 4, 4]
 };
 
 // =================================

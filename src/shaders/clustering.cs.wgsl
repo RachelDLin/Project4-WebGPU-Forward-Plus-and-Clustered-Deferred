@@ -9,17 +9,17 @@
 // convert from screen space to view space
 fn screenToView(screenPos: vec2f, ndcZ: f32) -> vec3f {
     // normalized device coordinates
-    let ndc = vec4f(screenPos.x / camera.screenRes.x * 2f - 1f,
-                    screenPos.y / camera.screenRes.y * 2f - 1f,
+    let ndc = vec4f(screenPos.x / camera.screenRes.x * 2f - 1.0,
+                    screenPos.y / camera.screenRes.y * 2f - 1.0,
                     ndcZ,
-                    1f);
+                    1.0);
     // transform to screen space
     let viewPos = camera.inverseProjMat * ndc;
     return viewPos.xyz / viewPos.w;
 }
 
 // test intersection w/ cluster
-fn lightClusterIntersectionTest(lightPos: vec3f, lightRadius: f32, minPos: vec3f, maxPos: vec3f) -> boolean {
+fn lightClusterIntersectionTest(lightPos: vec3f, lightRadius: f32, minPos: vec3f, maxPos: vec3f) -> bool {
     // find closest pos in cluster to lightPos
     let nearestPos = clamp(lightPos, minPos, maxPos);
     let delta = nearestPos - lightPos;
@@ -49,12 +49,13 @@ fn lightClusterIntersectionTest(lightPos: vec3f, lightRadius: f32, minPos: vec3f
 //     - Store the number of lights assigned to this cluster.
 
 @compute
-@workgroup_size(${clustering_workgroupSize[0]}, ${clustering_workgroupSize[1]}, ${clustering_workgroupSize[2]})
+@workgroup_size(${clusterLightsWorkgroupSize[0]}, ${clusterLightsWorkgroupSize[1]}, ${clusterLightsWorkgroupSize[2]})
 fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
 
-    // get cluster dims and check that there's an actual cluster at globalIdx
-    let clusterDims = vec3u(${clusterDims[0]}, ${clusterDims[1]}, ${clusterDims[2]}) 
+    // get cluster dims
+    let clusterDims = vec3u(${clusterDims[0]}, ${clusterDims[1]}, ${clusterDims[2]});
     
+    // check that there's an actual cluster at globalIdx
     if (globalIdx.x >= clusterDims.x || 
         globalIdx.y >= clusterDims.y ||
         globalIdx.z >= clusterDims.z) {
@@ -63,11 +64,9 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
 
     let clusterIdx: u32 = globalIdx.x + globalIdx.y * clusterDims.x + globalIdx.z * clusterDims.x * clusterDims.y;
 
-    //clusterSet.clusters[clusterIdx].numLights = 0u;
-
     // Calculate the screen-space bounds for this cluster in 2D (XY).
-    let screenMin = vec2f(globalIdx.xy) / vec2f(clusterDims.xy) * vec2f(camera.screenRes);
-    let screenMax = vec2f(globalIdx.xy + vec2u(1u)) / vec2f(clusterDims.xy) * camera.screenRes;
+    let screenMin = vec2f(globalIdx.xy) / vec2f(clusterDims.xy) * vec2f(camera.screenRes.xy);
+    let screenMax = vec2f(globalIdx.xy + vec2u(1u, 1u)) / vec2f(clusterDims.xy) * vec2f(camera.screenRes.xy);
     
     // Calculate the depth bounds for this cluster in Z (near and far planes). Use logarithmic slices.
     let nearClip = camera.nearClip;
@@ -76,8 +75,8 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     let farZ = -nearClip * pow(farClip / nearClip, f32(globalIdx.z + 1u) / f32(clusterDims.z));
 
     // Convert these screen and depth bounds into view-space coordinates.
-    let viewMin = screenToView(screenMin, 1f);
-    let viewMax = screenToView(screenMax, 1f);
+    let viewMin = screenToView(screenMin, -1.0);
+    let viewMax = screenToView(screenMax, 1.0);
 
     // Store the computed bounding box (AABB) for the cluster.
     let clusterMin = vec3f(min(viewMin.x, viewMax.x),
@@ -94,10 +93,11 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     for (var lightIdx: u32 = 0u; lightIdx < lightSet.numLights; lightIdx++) {
         
         // get curr light position
-        let lightPos = lightSet.lights[lightIdx].pos;
+        let light = lightSet.lights[lightIdx];
+        let lightPos = light.pos;
 
         // convert from world to view space
-        let lightPosView = camera.viewMat * vec4f(lightPos, 1f);
+        let lightPosView = camera.viewMat * vec4f(lightPos, 1.0);
 
         // Check if the light intersects with the cluster’s bounding box (AABB).
         if (lightClusterIntersectionTest(lightPosView.xyz, ${lightRadius}, clusterMin, clusterMax)) {

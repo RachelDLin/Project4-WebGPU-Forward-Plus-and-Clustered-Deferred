@@ -14,7 +14,7 @@ struct FragmentInput
     @location(0) pos: vec3f,
     @location(1) nor: vec3f,
     @location(2) uv: vec2f
-}
+};
 
 // ------------------------------------
 // Shading process:
@@ -37,19 +37,27 @@ fn main(in: FragmentInput) -> @location(0) vec4f
         discard;
     }
 
-    // Determine which cluster contains the current fragment.
     let clusterDims: vec3u = vec3u(${clusterDims[0]}, ${clusterDims[1]}, ${clusterDims[2]});
 
-    let clip = camera.viewProjMat * vec4(in.pos, 1f);
-    let ndc = clip.xy / clip.w;
+    // clip space
+    let clipPos = camera.viewProjMat * vec4(in.pos, 1.0); 
+
+    // perspective divide
+    let ndc = clipPos.xy / clipPos.w; 
+
+    // [-1, 1] -> [0, 1]
     let screenUV = ndc * 0.5 + 0.5;
+
+    // Determine which cluster contains the current fragment.
     let clusterCoordX: u32 = u32(clamp(floor(screenUV.x * f32(clusterDims.x)), 0f, f32(clusterDims.x - 1u)));
     let clusterCoordY: u32 = u32(clamp(floor(screenUV.y * f32(clusterDims.y)), 0f, f32(clusterDims.y - 1u)));
 
+    // view space (camera perspective)
+    let viewPos = camera.viewMat * vec4f(in.pos, 1.0);
+
     // logarithmic slices in z direction
-    let viewPos = camera.viewMat * vec4f(in.pos, 1f);
     let numSlices = f32(clusterDims.z);
-    let depth = max(-viewPos.z, camera.nearClip);
+    let depth = -viewPos.z;
     let slice = floor(
                     numSlices * 
                     log(depth / camera.nearClip) /
@@ -64,7 +72,7 @@ fn main(in: FragmentInput) -> @location(0) vec4f
     let numClusterLights = fragCluster.numLights;
 
     // Initialize a variable to accumulate the total light contribution for the fragment.
-    var totalLightContrib = vec3f(0, 0, 0);
+    var totalLightContrib = vec3f(0.0, 0.0, 0.0);
 
     // For each light in the cluster:
     for (var clusterLightIdx = 0u; clusterLightIdx < numClusterLights; clusterLightIdx++) {

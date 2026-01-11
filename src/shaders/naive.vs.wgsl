@@ -11,7 +11,7 @@ struct VertexInput
     @location(0) pos: vec3f,
     @location(1) nor: vec3f,
     @location(2) uv: vec2f
-}
+};
 
 struct VertexOutput
 {
@@ -19,7 +19,7 @@ struct VertexOutput
     @location(0) pos: vec3f,
     @location(1) nor: vec3f,
     @location(2) uv: vec2f
-}
+};
 
 @vertex
 fn main(in: VertexInput) -> VertexOutput
