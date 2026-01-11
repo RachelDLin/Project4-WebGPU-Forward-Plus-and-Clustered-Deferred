@@ -18,7 +18,7 @@ export class NaiveRenderer extends renderer.Renderer {
             label: "scene uniforms bind group layout",
             entries: [
                 // 1.2: add an entry for camera uniforms at binding 0, visible to only the vertex shader, and of type "uniform"
-                {
+                { // camera
                     binding: 0,
                     visibility: GPUShaderStage.VERTEX,
                     buffer: { type: "uniform"}
@@ -38,11 +38,11 @@ export class NaiveRenderer extends renderer.Renderer {
                 // 1.2: add an entry for camera uniforms at binding 0
                 // you can access the camera using `this.camera`
                 // if you run into TypeScript errors, you're probably trying to upload the host buffer instead
-                {
+                { // camera
                     binding: 0,
                     resource: { buffer: this.camera.uniformsBuffer }
                 }, 
-                {
+                { // lightSet
                     binding: 1,
                     resource: { buffer: this.lights.lightSetStorageBuffer }
                 }

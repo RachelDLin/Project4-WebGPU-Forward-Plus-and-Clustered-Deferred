@@ -1,9 +1,9 @@
-import { Mat4, mat4, Vec3, vec3 } from "wgpu-matrix";
+import { Mat4, mat4, Vec3, vec3, Vec2, vec2 } from "wgpu-matrix";
 import { toRadians } from "../math_util";
 import { device, canvas, fovYDegrees, aspectRatio } from "../renderer";
 
 class CameraUniforms {
-    readonly buffer = new ArrayBuffer(16 * 4);
+    readonly buffer = new ArrayBuffer((16 * 4 + 4) * 4);
     private readonly floatView = new Float32Array(this.buffer);
 
     set viewProjMat(mat: Float32Array) {
@@ -13,7 +13,35 @@ class CameraUniforms {
         }
     }
 
-    // TODO-2: add extra functions to set values needed for light clustering here
+    // 2: extra functions to set values needed for light clustering
+
+    set viewMat(mat: Float32Array) {
+        for (let i = 0; i < 16; i++) {
+            this.floatView[16 + i] = mat[i];
+        }
+    }
+
+    set inverseViewMat(mat: Float32Array) {
+        for (let i = 0; i < 16; i++) {
+            this.floatView[32 + i] = mat[i];
+        }
+    }
+
+    set inverseProjMat(mat: Float32Array) {
+        for (let i = 0; i < 16; i++) {
+            this.floatView[48 + i] = mat[i];
+        }
+    }
+
+    set screenRes(dims: Vec2) {
+        this.floatView[64] = dims[0];
+        this.floatView[65] = dims[1];
+    }
+
+    set clipPlaneDists(clipDists: Vec2) {
+        this.floatView[66] = clipDists[0];
+        this.floatView[67] = clipDists[1];
+    }
 }
 
 export class Camera {
@@ -133,13 +161,26 @@ export class Camera {
     onFrame(deltaTime: number) {
         this.processInput(deltaTime);
 
+        const screenRes = vec2.fromValues(canvas.width, canvas.height);
+        const clipDists = vec2.fromValues(Camera.nearPlane, Camera.farPlane);
+
         const lookPos = vec3.add(this.cameraPos, vec3.scale(this.cameraFront, 1));
+
         const viewMat = mat4.lookAt(this.cameraPos, lookPos, [0, 1, 0]);
+        const inverseViewMat = mat4.inverse(viewMat);
+        const inverseProjMat = mat4.inverse(this.projMat);
+
         const viewProjMat = mat4.mul(this.projMat, viewMat);
+
         // 1.1: set `this.uniforms.viewProjMat` to the newly calculated view proj mat
         this.uniforms.viewProjMat = viewProjMat;
 
-        // TODO-2: write to extra buffers needed for light clustering here
+        // 2: write to extra buffers needed for light clustering here
+        this.uniforms.screenRes = screenRes;
+        this.uniforms.clipPlaneDists = clipDists;
+        this.uniforms.viewMat = viewMat;
+        this.uniforms.inverseViewMat = inverseViewMat;
+        this.uniforms.inverseProjMat = inverseProjMat;
 
         // 1.1: upload `this.uniforms.buffer` (host side) to `this.uniformsBuffer` (device side)
         // check `lights.ts` for examples of using `device.queue.writeBuffer()`

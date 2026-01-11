@@ -1,4 +1,30 @@
-// TODO-2: implement the light clustering compute shader
+// 2: light clustering compute shader
+
+@group(${bindGroup_scene}) @binding(0) var<uniform> camera: CameraUniforms;
+@group(${bindGroup_scene}) @binding(1) var<storage, read> lightSet: LightSet;
+@group(${bindGroup_scene}) @binding(2) var<storage, read_write> clusterSet: ClusterSet;
+
+// helper fns
+
+// convert from screen space to view space
+fn screenToView(screenPos: vec2f, ndcZ: f32) -> vec3f {
+    // normalized device coordinates
+    let ndc = vec4f(screenPos.x / camera.screenRes.x * 2f - 1f,
+                    screenPos.y / camera.screenRes.y * 2f - 1f,
+                    ndcZ,
+                    1f);
+    // transform to screen space
+    let viewPos = camera.inverseProjMat * ndc;
+    return viewPos.xyz / viewPos.w;
+}
+
+// test intersection w/ cluster
+fn lightClusterIntersectionTest(lightPos: vec3f, lightRadius: f32, minPos: vec3f, maxPos: vec3f) -> boolean {
+    // find closest pos in cluster to lightPos
+    let nearestPos = clamp(lightPos, minPos, maxPos);
+    let delta = nearestPos - lightPos;
+    return dot(delta, delta) <= lightRadius * lightRadius;
+}
 
 // ------------------------------------
 // Calculating cluster bounds:
@@ -21,3 +47,71 @@
 //         - Stop adding lights if the maximum number of lights is reached.
 
 //     - Store the number of lights assigned to this cluster.
+
+@compute
+@workgroup_size(${clustering_workgroupSize[0]}, ${clustering_workgroupSize[1]}, ${clustering_workgroupSize[2]})
+fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
+
+    // get cluster dims and check that there's an actual cluster at globalIdx
+    let clusterDims = vec3u(${clusterDims[0]}, ${clusterDims[1]}, ${clusterDims[2]}) 
+    
+    if (globalIdx.x >= clusterDims.x || 
+        globalIdx.y >= clusterDims.y ||
+        globalIdx.z >= clusterDims.z) {
+        return;
+    }
+
+    let clusterIdx: u32 = globalIdx.x + globalIdx.y * clusterDims.x + globalIdx.z * clusterDims.x * clusterDims.y;
+
+    //clusterSet.clusters[clusterIdx].numLights = 0u;
+
+    // Calculate the screen-space bounds for this cluster in 2D (XY).
+    let screenMin = vec2f(globalIdx.xy) / vec2f(clusterDims.xy) * vec2f(camera.screenRes);
+    let screenMax = vec2f(globalIdx.xy + vec2u(1u)) / vec2f(clusterDims.xy) * camera.screenRes;
+    
+    // Calculate the depth bounds for this cluster in Z (near and far planes). Use logarithmic slices.
+    let nearClip = camera.nearClip;
+    let farClip = camera.farClip;
+    let nearZ = -nearClip * pow(farClip / nearClip, f32(globalIdx.z) / f32(clusterDims.z));
+    let farZ = -nearClip * pow(farClip / nearClip, f32(globalIdx.z + 1u) / f32(clusterDims.z));
+
+    // Convert these screen and depth bounds into view-space coordinates.
+    let viewMin = screenToView(screenMin, 1f);
+    let viewMax = screenToView(screenMax, 1f);
+
+    // Store the computed bounding box (AABB) for the cluster.
+    let clusterMin = vec3f(min(viewMin.x, viewMax.x),
+                            min(viewMin.y, viewMax.y),
+                            min(nearZ, farZ));
+    let clusterMax = vec3f(max(viewMin.x, viewMax.x),
+                            max(viewMin.y, viewMax.y),
+                            max(nearZ, farZ));
+
+    // Initialize a counter for the number of lights in this cluster.
+    var numClusterLights: u32 = 0u;
+
+    // For each light:
+    for (var lightIdx: u32 = 0u; lightIdx < lightSet.numLights; lightIdx++) {
+        
+        // get curr light position
+        let lightPos = lightSet.lights[lightIdx].pos;
+
+        // convert from world to view space
+        let lightPosView = camera.viewMat * vec4f(lightPos, 1f);
+
+        // Check if the light intersects with the cluster’s bounding box (AABB).
+        if (lightClusterIntersectionTest(lightPosView.xyz, ${lightRadius}, clusterMin, clusterMax)) {
+            // If it does, add the light to the cluster's light list.
+            clusterSet.clusters[clusterIdx].lights[numClusterLights] = lightIdx;
+            numClusterLights++;
+        }
+
+        // Stop adding lights if the maximum number of lights is reached.
+        if (numClusterLights >= ${maxLightsPerCluster}) {
+            break;
+        }
+    }
+
+    // Store the number of lights assigned to this cluster.
+    clusterSet.clusters[clusterIdx].numLights = numClusterLights;
+}
