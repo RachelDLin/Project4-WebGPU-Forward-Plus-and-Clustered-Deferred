@@ -57,7 +57,7 @@ fn main(in: FragmentInput) -> @location(0) vec4f
 
     // logarithmic slices in z direction
     let numSlices = f32(clusterDims.z);
-    let depth = -viewPos.z;
+    let depth = max(-viewPos.z, camera.nearClip);
     let slice = floor(
                     numSlices * 
                     log(depth / camera.nearClip) /
