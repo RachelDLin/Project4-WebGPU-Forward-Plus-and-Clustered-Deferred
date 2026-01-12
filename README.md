@@ -3,25 +3,54 @@ WebGL Forward+ and Clustered Deferred Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 4**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+Rachel Lin
+
+* [LinkedIn](https://www.linkedin.com/in/rachel-lin-452834213/)
+* [personal website](https://www.artstation.com/rachellin4)
+* [Instagram](https://www.instagram.com/lotus_crescent/)
+
+
+Tested on: Windows 11, 12th Gen Intel(R) Core(TM) i7-12700H @ 2.30GHz, NVIDIA GeForce RTX 3080 Laptop GPU (16 GB)
 
 ### Live Demo
 
-[![](img/thumb.png)](http://TODO.github.io/Project4-WebGPU-Forward-Plus-and-Clustered-Deferred)
+
 
 ### Demo Video/GIF
 
-[![](img/video.mp4)](TODO)
+<img src="img/clustered_deferred.gif" width="50%">
 
-### (TODO: Your README)
+### Overview
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+This web app offers three different rendering pipelines: naive forward, forward plus, and clustered deferred. 
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+## Naive Forward
+
+## Forward Plus
+
+## Clustered Deferred
+
+### Performance
+
+## Number of Lights
+
+<img src="img/Frame Duration vs. Number of Lights.png" width="50%">
+
+## Max Number of Lights in a Cluster
+
+<img src="img/Frame Duration vs. Max Number of Lights in a Cluster.png" width="50%">
+
+## Number of Clusters
+
+<img src="img/Frame Duration vs. Number of Clusters.png" width="50%">
+
+## Clustering Workgroup Size
+
+<img src="img/Frame Duration vs. Workgroup Size.png" width="50%">
+
+## Light Radius
+
+<img src="img/Frame Duration vs. Light Radius.png" width="50%">
 
 ### Credits
 
