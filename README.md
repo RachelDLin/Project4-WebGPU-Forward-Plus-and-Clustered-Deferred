@@ -20,7 +20,16 @@ Tested on: Windows 11, 12th Gen Intel(R) Core(TM) i7-12700H @ 2.30GHz, NVIDIA Ge
 
 <img src="img/clustered_deferred.gif" width="50%">
 
-### Overview
+### Credits
+
+- [Vite](https://vitejs.dev/)
+- [loaders.gl](https://loaders.gl/)
+- [dat.GUI](https://github.com/dataarts/dat.gui)
+- [stats.js](https://github.com/mrdoob/stats.js)
+- [wgpu-matrix](https://github.com/greggman/wgpu-matrix)
+
+
+# Overview
 
 This web app offers three different rendering pipelines: naive forward, forward plus, and clustered deferred. 
 
@@ -30,7 +39,7 @@ This web app offers three different rendering pipelines: naive forward, forward 
 
 ## Clustered Deferred
 
-### Performance
+# Performance
 
 ## Number of Lights
 
@@ -52,10 +61,3 @@ This web app offers three different rendering pipelines: naive forward, forward 
 
 <img src="img/Frame Duration vs. Light Radius.png" width="50%">
 
-### Credits
-
-- [Vite](https://vitejs.dev/)
-- [loaders.gl](https://loaders.gl/)
-- [dat.GUI](https://github.com/dataarts/dat.gui)
-- [stats.js](https://github.com/mrdoob/stats.js)
-- [wgpu-matrix](https://github.com/greggman/wgpu-matrix)
