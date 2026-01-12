@@ -94,4 +94,5 @@ fn main(@builtin(position) fragPos: vec4f) -> @location(0) vec4f
     //return vec4(normal.xyz, 1);
     //return vec4(albedo.xyz, 1);
     //return vec4(worldpos.xyz, 1);
+    //return vec4(viewPos.z, viewPos.z, viewPos.z, 1)*-0.05;
 }
