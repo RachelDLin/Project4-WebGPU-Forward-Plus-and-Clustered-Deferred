@@ -47,7 +47,7 @@ This web app offers three different rendering pipelines: naive forward, forward 
 
 ## Max Number of Lights in a Cluster
 
-<img src="img/Frame Duration vs. Max Number of Lights in a Cluster.png" width="50%">
+<img src="img/Frame Duration vs. Max Number of Lights Per Cluster.png" width="50%">
 
 ## Number of Clusters
 
