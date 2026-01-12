@@ -44,6 +44,7 @@ void constants.lightRadius;
 // =================================
 
 function evalShaderRaw(raw: string) {
+    raw = raw.replace(/\$\{lightRadius\}/g, constants.lightRadius.toString());
     return eval('`' + raw.replaceAll('${', '${constants.') + '`');
 }
 
