@@ -9,8 +9,8 @@
 // convert from screen space to view space
 fn screenToView(screenPos: vec2f, ndcZ: f32) -> vec3f {
     // normalized device coordinates
-    let ndc = vec4f(screenPos.x / camera.screenRes.x * 2f - 1.0,
-                    screenPos.y / camera.screenRes.y * 2f - 1.0,
+    let ndc = vec4f(screenPos.x / camera.screenRes.x,
+                    screenPos.y / camera.screenRes.y,
                     ndcZ,
                     1.0);
     // transform to screen space

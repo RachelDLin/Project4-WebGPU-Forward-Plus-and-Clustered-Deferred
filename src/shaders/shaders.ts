@@ -39,6 +39,8 @@ export const constants = {
     clusterLightsWorkgroupSize: [16, 16, 1]
 };
 
+void constants.lightRadius;
+
 // =================================
 
 function evalShaderRaw(raw: string) {
