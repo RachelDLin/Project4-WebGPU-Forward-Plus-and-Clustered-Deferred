@@ -90,4 +90,8 @@ fn main(@builtin(position) fragPos: vec4f) -> @location(0) vec4f
 
     // Return the final color, ensuring that the alpha component is set appropriately (typically to 1)
     return vec4(finalColor, 1);
+
+    //return vec4(normal.xyz, 1);
+    //return vec4(albedo.xyz, 1);
+    //return vec4(worldpos.xyz, 1);
 }
